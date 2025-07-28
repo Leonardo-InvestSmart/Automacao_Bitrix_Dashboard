@@ -2,7 +2,7 @@ name: ETL Bitrix → Supabase
 
 on:
   schedule:
-    # roda todo dia de hora em hora às 5’— ajuste conforme necessidade
+    # roda automaticamente de 5 em 5 minutos
     - cron:  '5 * * * *'
   workflow_dispatch:  # permite também rodar manualmente na aba Actions
 
@@ -33,5 +33,5 @@ jobs:
           SUPABASE_URL:        ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY:        ${{ secrets.SUPABASE_KEY }}
         run: |
-          # Se o seu entrypoint for run_etl.py:
+          # O entrypoint for run_etl.py:
           python run_etl.py
