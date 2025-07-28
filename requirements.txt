@@ -1,11 +1,11 @@
 streamlit
-supabase-py
+supabase
 pandas
 numpy
 requests
 pytz
 pydantic
-postgrest-py
+postgrest
 plotly
 openpyxl
 python-dotenv 
