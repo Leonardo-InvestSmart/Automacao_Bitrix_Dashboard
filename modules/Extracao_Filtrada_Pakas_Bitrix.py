@@ -9,11 +9,18 @@ import traceback
 import datetime
 from datetime import datetime, timedelta
 import pytz
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # Tokens
-btrx_hash_user = "22"
-btrx_hash_acesso = "ok80wjow5agq1ytp"
-token_bi_connector = "vy4ucBBd0LeZND1RQ05yWa11pq6Sx2DRbr"
+# BITRIX_HASH_USER = "22"
+# BITRIX_HASH_ACESSO = "ok80wjow5agq1ytp"
+# TOKEN_BI_CONNECTOR = "vy4ucBBd0LeZND1RQ05yWa11pq6Sx2DRbr"
+
+BITRIX_HASH_USER   = os.environ["BITRIX_HASH_USER"]
+BITRIX_HASH_ACESSO = os.environ["BITRIX_HASH_ACESSO"]
+TOKEN_BI_CONNECTOR = os.environ["TOKEN_BI_CONNECTOR"]
 
 # Copiado de utils.class_base.py
 class Request:
@@ -88,7 +95,7 @@ class BiConnectorBx:
         query_params = {"table": table}
         request_body = {
             "dateRange": {"startDate": self.start_date, "endDate": self.end_date},
-            "key": token_bi_connector,
+            "key": TOKEN_BI_CONNECTOR,
             "fields": fields,
             "dimensionsFilters": dimensionsFilters,
         }
@@ -113,9 +120,9 @@ class BitrixCrm:
     """
     Classe para criação de strings de requisições Bitrix.
     """
-    btrx_hash_user: str = btrx_hash_user
-    btrx_hash_access: str = btrx_hash_acesso
-    url_base: str = f"https://crm.hub-bnk.com/rest/{btrx_hash_user}/{btrx_hash_acesso}/"
+    BITRIX_HASH_USER: str = BITRIX_HASH_USER
+    btrx_hash_access: str = BITRIX_HASH_ACESSO
+    url_base: str = f"https://crm.hub-bnk.com/rest/{BITRIX_HASH_USER}/{BITRIX_HASH_ACESSO}/"
     btrx_method: Literal["add", "update", "delete", "list", None] = None
     btrx_class: Literal[
         "company", "contact", "deal", "lead", "department", "item", "user", None

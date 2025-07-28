@@ -1,6 +1,11 @@
 streamlit
+supabase-py
 pandas
+numpy
 requests
 pytz
-supabase
-streamlit-extras
+pydantic
+postgrest-py
+plotly
+openpyxl
+python-dotenv 
