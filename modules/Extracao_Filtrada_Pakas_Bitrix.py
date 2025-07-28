@@ -221,19 +221,17 @@ class BitrixFinanceiro(BitrixSPA):
 # Função para converter o fuso horário de Alemanha (CET/CEST) para Brasília (BRT)
 def convert_timezone(time_str):
     try:
-        # Parse da data no formato retornado pelo Bitrix
+        if not time_str or not time_str.strip():
+            return None
         time_dt = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
-        # Definir o fuso horário da Alemanha (CET/CEST)
         germany_tz = pytz.timezone("Europe/Berlin")
         time_dt = germany_tz.localize(time_dt)
-        # Converter para o fuso horário de Brasília (BRT)
         brasilia_tz = pytz.timezone("America/Sao_Paulo")
         time_brasilia = time_dt.astimezone(brasilia_tz)
-        # Retornar no formato brasileiro
         return time_brasilia.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         print(f"Erro ao converter o fuso horário: {e}")
-        return time_str
+        return None
 
 # Função para ler todos os dados dos cards do Bitrix
 def extract_all_bitrix_data():

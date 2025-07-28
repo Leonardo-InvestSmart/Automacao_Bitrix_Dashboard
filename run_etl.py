@@ -24,7 +24,7 @@ def main():
     else:
         print(f"▶ upsert de {len(df)} registros")
         # 4) Faz o UPSERT no Supabase
-        upsert_bitrix_cards(df.to_dict("records"))
+        upsert_bitrix_cards(df)
         # 5) Só depois de bem-sucedido, grava o novo watermark
         save_last_update(now)
         print(f"✔ watermark atualizado para {now}")

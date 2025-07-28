@@ -5,7 +5,9 @@ import json
 from postgrest import APIError
 from config import supabase
 
-def upsert_bitrix_cards(df: pd.DataFrame) -> None:
+def upsert_bitrix_cards(df) -> None:
+    if isinstance(df, list):
+        df = pd.DataFrame(df)
     df_clean = df.replace({np.inf: np.nan, -np.inf: np.nan})
     df_clean = df_clean.where(pd.notnull(df_clean), None)
 
