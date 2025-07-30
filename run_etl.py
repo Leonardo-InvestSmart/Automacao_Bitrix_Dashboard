@@ -11,16 +11,19 @@ from modules.bitrix_to_supabase import (
 
 def main():
     # 1) Lê o último UPDATED_TIME processado
-    last = get_last_update()
+    last_iso = get_last_update()
 
     # 2) Marca o now para usar como próximo watermark (hora de Brasília, UTC-3)
-    brazil_tz = pytz.timezone("America/Sao_Paulo")
-    now_local = datetime.now(brazil_tz)
-    now       = now_local.strftime("%Y-%m-%dT%H:%M:%SZ")
-    print(f"[{now}] extraindo UPDATED_TIME > {last} até {now}")
+    now_iso  = datetime.now(
+               pytz.timezone("America/Sao_Paulo")
+           ).astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    print(f"[{now_iso}] extraindo UPDATED_TIME > {last_iso} até {now_iso}")
 
     # 3) Extrai o delta
-    df = extract_incremental(last, now)
+    start_filter = last_iso.replace("T", " ").rstrip("Z")
+    end_filter   = now_iso.  replace("T", " ").rstrip("Z")
+
+    df = extract_incremental(start_filter, end_filter)
     if df.empty:
         print("▶ nenhum registro novo ou atualizado")
     else:
@@ -38,8 +41,8 @@ def main():
         # 4) Faz o UPSERT no Supabase
         upsert_bitrix_cards(df)
         # 5) Só depois de bem-sucedido, grava o novo watermark
-        save_last_update(now)
-        print(f"✔ watermark atualizado para {now}")
+        save_last_update(now_iso)
+        print(f"✔ watermark atualizado para {now_iso}")
 
 if __name__ == "__main__":
     main()

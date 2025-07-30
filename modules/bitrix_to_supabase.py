@@ -48,15 +48,17 @@ def save_last_update(value: str):
 def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     bi = BiConnectorBx(start_date=start_iso.split("T")[0],
                        end_date=     end_iso.split("T")[0])
+    # prepara valores no formato bruto do Bitrix: "YYYY-MM-DD HH:MM:SS"
+    start_val = start_iso.replace("T", " ").rstrip("Z")
+    end_val   = end_iso.  replace("T", " ").rstrip("Z")
+
     raw = bi.get_data_default(
         table=f"crm_dynamic_items_{BitrixFinanceiro.entity_type_id}",
         fields=None,
-        # filtra por UPDATED_TIME entre start e end:
         dimensionsFilters=[
-          [
-            {"field":"UPDATED_TIME","operator":">","value":start_iso},
-            {"field":"UPDATED_TIME","operator":"<=","value":end_iso},
-          ]
+          # cada inner list é OR, outer list é AND → aqui: UPDATED_TIME > start_val  AND UPDATED_TIME <= end_val
+          [{"field":"UPDATED_TIME","operator":">","value":start_val}],
+          [{"field":"UPDATED_TIME","operator":"<=","value":end_val}],
         ]
     )
     df = pd.DataFrame(raw[1:], columns=raw[0])
