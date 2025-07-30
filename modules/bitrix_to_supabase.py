@@ -69,9 +69,9 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
           .dt.tz_convert(pytz.UTC)
     )
 
-    # 3) Converte start_iso/end_iso para UTC-aware
-    start_dt = datetime.strptime(start_iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
-    end_dt   = datetime.strptime(end_iso,   "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
+    # 3) Converte start_iso/end_iso para UTC-aware (suporta offset “+00:00”)
+    start_dt = datetime.fromisoformat(start_iso).astimezone(pytz.UTC)
+    end_dt   = datetime.fromisoformat(end_iso).  astimezone(pytz.UTC)
 
     # 4) Filtra pelo intervalo UTC correto
     df = df[
