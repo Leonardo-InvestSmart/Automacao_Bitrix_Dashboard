@@ -72,9 +72,11 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(convert_timezone)
 
-    # **DEBUG**: salva cópia do histórico antes da conversão
+    # **DEBUG**: cria historic_before antes de ajustar o fuso no histórico
+    orig = df.get("UF_CRM_335_AUT_HISTORICO", pd.Series(dtype=object))
+    df["historic_before"] = orig.fillna("")
+
     if "UF_CRM_335_AUT_HISTORICO" in df.columns:
-        df["historic_before"] = df["UF_CRM_335_AUT_HISTORICO"]
         df["UF_CRM_335_AUT_HISTORICO"] = (
             df["UF_CRM_335_AUT_HISTORICO"]
             .apply(adjust_history_timezone)

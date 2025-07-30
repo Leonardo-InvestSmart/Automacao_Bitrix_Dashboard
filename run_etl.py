@@ -25,13 +25,16 @@ def main():
         print("▶ nenhum registro novo ou atualizado")
     else:
         print(f"▶ upsert de {len(df)} registros")
-        # **DEBUG**: mostra quais IDs serão upsertados
         print("▶ IDs extraídos para upsert:", df["ID"].tolist())
 
-        # **DEBUG**: mostra antes⇨depois do histórico
-        preview = df[["ID", "historic_before", "UF_CRM_335_AUT_HISTORICO"]]
-        print("▶ Histórico (antes ⇒ depois):")
-        print(preview.to_dict(orient="records"))
+        cols = ["ID"]
+        if "historic_before" in df.columns and "UF_CRM_335_AUT_HISTORICO" in df.columns:
+            cols += ["historic_before", "UF_CRM_335_AUT_HISTORICO"]
+
+        preview = df[cols]
+        if len(cols) > 1:
+            print("▶ Histórico (antes ⇒ depois):")
+            print(preview.to_dict(orient="records"))
         # 4) Faz o UPSERT no Supabase
         upsert_bitrix_cards(df)
         # 5) Só depois de bem-sucedido, grava o novo watermark
