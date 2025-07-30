@@ -10,11 +10,10 @@ from modules.bitrix_to_supabase import (
 )
 
 def main():
-    tz = pytz.timezone("America/Sao_Paulo")
     # 1) Lê o último UPDATED_TIME processado
     last = get_last_update()  # ex: "2025-07-22T12:00:00Z"
     # 2) Marca o now para usar como próximo watermark
-    now = datetime.now(tz).strftime("%Y-%m-%dT%H:%M:%SZ")
+    now = datetime.now(pytz.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"[{now}] extraindo UPDATED_TIME > {last} até {now}")
 
     # 3) Extrai o delta

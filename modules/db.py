@@ -4,6 +4,7 @@ import math
 import json
 from postgrest import APIError
 from config import supabase
+import pytz
 
 def upsert_bitrix_cards(df) -> None:
     if isinstance(df, list):
@@ -11,19 +12,31 @@ def upsert_bitrix_cards(df) -> None:
     df_clean = df.replace({np.inf: np.nan, -np.inf: np.nan})
     df_clean = df_clean.where(pd.notnull(df_clean), None)
 
-    # Datas → ISO-8601 / limpa NaT→None
-    for col in ("CREATED_TIME", "UPDATED_TIME", "UF_CRM_335_AUT_ETAPA_8", "UF_CRM_335_AUT_ETAPA_9"):
+    for col in (
+        "CREATED_TIME",
+        "UPDATED_TIME",
+        "UF_CRM_335_AUT_ETAPA_8",
+        "UF_CRM_335_AUT_ETAPA_9",
+    ):
         if col in df_clean.columns:
+            # parseia do formato de string já ajustada localmente
             if col == "CREATED_TIME":
-                parsed = pd.to_datetime(df_clean[col],
-                                        format="%Y-%m-%d %H:%M:%S",
-                                        errors="coerce")
+                parsed = pd.to_datetime(
+                    df_clean[col],
+                    format="%Y-%m-%d %H:%M:%S",
+                    errors="coerce"
+                )
             else:
-                parsed = pd.to_datetime(df_clean[col],
-                                        dayfirst=True,
-                                        errors="coerce")
-            iso = parsed.dt.tz_localize(None).dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+                parsed = pd.to_datetime(
+                    df_clean[col],
+                    dayfirst=True,
+                    errors="coerce"
+                )
+            # considera essa string como UTC diretamente
+            parsed = parsed.dt.tz_localize(pytz.UTC)
+            iso = parsed.dt.strftime("%Y-%m-%dT%H:%M:%SZ")
             df_clean[col] = iso.where(iso.notna(), None)
+
 
     # **3) Convertendo NPS para int puro**
     if "UF_CRM_335_NPS" in df_clean.columns:

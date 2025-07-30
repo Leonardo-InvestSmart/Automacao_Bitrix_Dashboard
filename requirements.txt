@@ -9,3 +9,4 @@ postgrest
 plotly
 openpyxl
 python-dotenv 
+streamlit-autorefresh

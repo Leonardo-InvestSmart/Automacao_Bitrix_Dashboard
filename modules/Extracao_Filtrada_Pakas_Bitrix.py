@@ -8,7 +8,7 @@ from requests.adapters import HTTPAdapter, Retry
 import traceback
 import datetime
 from datetime import datetime, timedelta
-import pytz
+import re
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -218,20 +218,35 @@ class BitrixFinanceiro(BitrixSPA):
     entity_type_id: Literal[179] = 179
     category_id: Literal[823] = 823
 
-# Função para converter o fuso horário de Alemanha (CET/CEST) para Brasília (BRT)
+# Função para converter o horário bruto (UTC+6) para Brasília (BRT, UTC–3)
 def convert_timezone(time_str):
     try:
         if not time_str or not time_str.strip():
             return None
         time_dt = datetime.strptime(time_str, "%Y-%m-%d %H:%M:%S")
-        germany_tz = pytz.timezone("Europe/Berlin")
-        time_dt = germany_tz.localize(time_dt)
-        brasilia_tz = pytz.timezone("America/Sao_Paulo")
-        time_brasilia = time_dt.astimezone(brasilia_tz)
+        # Subtrai 6 horas para ajustar de UTC+6 para UTC-3
+        time_brasilia = time_dt - timedelta(hours=6)
         return time_brasilia.strftime("%Y-%m-%d %H:%M:%S")
     except Exception as e:
         print(f"Erro ao converter o fuso horário: {e}")
         return None
+
+def adjust_history_timezone(hist_str):
+    """
+    Subtrai 6 horas de todos os timestamps no formato DD/MM/YYYY HH:MM:SS
+    encontrados dentro da string de histórico.
+    """
+    if not hist_str or pd.isna(hist_str):
+        return hist_str
+
+    def _repl(match):
+        date_str = match.group(1)
+        dt = datetime.strptime(date_str, "%d/%m/%Y %H:%M:%S")
+        dt_adj = dt - timedelta(hours=6)
+        return dt_adj.strftime("%d/%m/%Y %H:%M:%S")
+
+    pattern = r"(\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2})"
+    return re.sub(pattern, _repl, hist_str)
 
 # Função para ler todos os dados dos cards do Bitrix
 def extract_all_bitrix_data():
@@ -250,13 +265,14 @@ def extract_all_bitrix_data():
     # Definir as colunas de interesse
     columns_of_interest = [
         "ID",
+        "CREATED_TIME",
+        "UPDATED_TIME",
         "ASSIGNED_BY_NAME",
         "STAGE_NAME",
         "UF_CRM_335_TIPO_COMISSAO",
         "UF_CRM_335_USUARIO_SOLICITANTE",
         "UF_CRM_335_ORIGEM_COMISSAO",
         "UF_CRM_335_DESCRICAO_PROBLEMA_COMISSOES",
-        "CREATED_TIME",
         "MOVED_BY_NAME",
         "UF_CRM_335_AUT_HISTORICO",
         "UF_CRM_335_AUT_ETAPA_8",
@@ -284,6 +300,18 @@ def extract_all_bitrix_data():
     # Converter os horários para o fuso de Brasília
     if 'CREATED_TIME' in df_cards.columns:
         df_cards['CREATED_TIME'] = df_cards['CREATED_TIME'].apply(convert_timezone)
+    if 'UPDATED_TIME' in df_cards.columns:
+        df_cards['UPDATED_TIME'] = df_cards['UPDATED_TIME'].apply(convert_timezone)
+    if 'UF_CRM_335_AUT_ETAPA_9' in df_cards.columns:
+        df_cards['UF_CRM_335_AUT_ETAPA_9'] = df_cards['UF_CRM_335_AUT_ETAPA_9'].apply(convert_timezone)
+    if 'UF_CRM_335_AUT_ETAPA_8' in df_cards.columns:
+        df_cards['UF_CRM_335_AUT_ETAPA_8'] = df_cards['UF_CRM_335_AUT_ETAPA_8'].apply(convert_timezone)
+    if 'UF_CRM_335_AUT_HISTORICO' in df_cards.columns:
+        df_cards['UF_CRM_335_AUT_HISTORICO'] = (
+            df_cards['UF_CRM_335_AUT_HISTORICO']
+            .apply(adjust_history_timezone)
+        )
+
 
     # Exibir as colunas disponíveis
     print("\nColunas disponíveis nos dados do Bitrix:")

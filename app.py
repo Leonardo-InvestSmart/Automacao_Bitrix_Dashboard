@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from config import supabase
+from streamlit_autorefresh import st_autorefresh
 
 # --- Configuração da página ---
 st.set_page_config(
@@ -9,6 +10,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+
+# Atualiza a cada 5 minutos (300.000 milissegundos)
+st_autorefresh(interval=300000, key="refresh")
+
+import datetime
+st.markdown(f"🕒 Última atualização: `{datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')}`")
 
 # --- CSS para cards e estilo geral ---
 st.markdown("""

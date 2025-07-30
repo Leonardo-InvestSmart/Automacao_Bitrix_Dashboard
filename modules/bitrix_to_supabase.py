@@ -9,7 +9,9 @@ from modules.Extracao_Filtrada_Pakas_Bitrix import (
     BiConnectorBx,
     BitrixFinanceiro,
     convert_timezone,
+    adjust_history_timezone,
 )
+
 
 TABLE_NAME = "BITRIX_CARDS"
 COLUMNS = [
@@ -34,9 +36,9 @@ def get_last_update() -> str:
     if resp.data and resp.data.get("last_updated"):
         return resp.data["last_updated"]
     # fallback:
-    tz = pytz.timezone("America/Sao_Paulo")
-    dt = datetime.now(tz) - timedelta(days=1)
+    dt = datetime.now(pytz.utc) - timedelta(days=1)
     return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
 
 def save_last_update(value: str):
     supabase.table("ETL_CONTROL") \
@@ -60,9 +62,21 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     df = pd.DataFrame(raw[1:], columns=raw[0])
     df = df[df["CATEGORY_ID"] == BitrixFinanceiro.category_id]
 
-    # converte timezones
-    for col in ("UPDATED_TIME","CREATED_TIME","UF_CRM_335_AUT_ETAPA_8","UF_CRM_335_AUT_ETAPA_9"):
+    # converte fuso nas colunas de data/hora
+    for col in (
+        "UPDATED_TIME",
+        "CREATED_TIME",
+        "UF_CRM_335_AUT_ETAPA_8",
+        "UF_CRM_335_AUT_ETAPA_9",
+    ):
         if col in df.columns:
             df[col] = df[col].apply(convert_timezone)
+
+    # ajusta o histórico de etapas
+    if "UF_CRM_335_AUT_HISTORICO" in df.columns:
+        df["UF_CRM_335_AUT_HISTORICO"] = (
+            df["UF_CRM_335_AUT_HISTORICO"]
+            .apply(adjust_history_timezone)
+        )
 
     return df[[c for c in COLUMNS if c in df.columns]]
