@@ -48,23 +48,15 @@ def save_last_update(value: str):
 def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     bi = BiConnectorBx(start_date=start_iso.split("T")[0],
                        end_date=     end_iso.split("T")[0])
-    # prepara valores no formato bruto do Bitrix: "YYYY-MM-DD HH:MM:SS"
-    start_val = start_iso.replace("T", " ").rstrip("Z")
-    end_val   = end_iso.  replace("T", " ").rstrip("Z")
-
+    # 1) Puxa todos os registros (sem filtro OR falho)
     raw = bi.get_data_default(
         table=f"crm_dynamic_items_{BitrixFinanceiro.entity_type_id}",
-        fields=None,
-        dimensionsFilters=[
-          # cada inner list é OR, outer list é AND → aqui: UPDATED_TIME > start_val  AND UPDATED_TIME <= end_val
-          [{"field":"UPDATED_TIME","operator":">","value":start_val}],
-          [{"field":"UPDATED_TIME","operator":"<=","value":end_val}],
-        ]
+        fields=None
     )
     df = pd.DataFrame(raw[1:], columns=raw[0])
     df = df[df["CATEGORY_ID"] == BitrixFinanceiro.category_id]
 
-    # converte fuso nas colunas de data/hora
+    # 2) Ajusta timezone nas colunas relevantes
     for col in (
         "UPDATED_TIME",
         "CREATED_TIME",
@@ -74,14 +66,29 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
         if col in df.columns:
             df[col] = df[col].apply(convert_timezone)
 
-    # **DEBUG**: cria historic_before antes de ajustar o fuso no histórico
+    # 3) Filtra incrementalmente em pandas (start < UPDATED_TIME ≤ end)
+    tz       = pytz.timezone("America/Sao_Paulo")
+    start_dt = datetime.fromisoformat(start_iso.replace("Z","")) \
+                       .astimezone(tz).replace(tzinfo=None)
+    end_dt   = datetime.fromisoformat(end_iso.  replace("Z","")) \
+                       .astimezone(tz).replace(tzinfo=None)
+
+    df["UPDATED_TIME_dt"] = pd.to_datetime(
+        df["UPDATED_TIME"],
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce"
+    )
+    df = df[
+        (df["UPDATED_TIME_dt"] > start_dt) &
+        (df["UPDATED_TIME_dt"] <= end_dt)
+    ]
+
+    # 4) Ajuste de histórico (debug before⇨after)
     orig = df.get("UF_CRM_335_AUT_HISTORICO", pd.Series(dtype=object))
     df["historic_before"] = orig.fillna("")
-
     if "UF_CRM_335_AUT_HISTORICO" in df.columns:
-        df["UF_CRM_335_AUT_HISTORICO"] = (
-            df["UF_CRM_335_AUT_HISTORICO"]
+        df["UF_CRM_335_AUT_HISTORICO"] = df["UF_CRM_335_AUT_HISTORICO"] \
             .apply(adjust_history_timezone)
-        )
+
 
     return df[[c for c in COLUMNS if c in df.columns]]

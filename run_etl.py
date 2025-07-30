@@ -11,19 +11,16 @@ from modules.bitrix_to_supabase import (
 
 def main():
     # 1) Lê o último UPDATED_TIME processado
-    last_iso = get_last_update()
+    last = get_last_update()
 
     # 2) Marca o now para usar como próximo watermark (hora de Brasília, UTC-3)
-    now_iso  = datetime.now(
-               pytz.timezone("America/Sao_Paulo")
-           ).astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    print(f"[{now_iso}] extraindo UPDATED_TIME > {last_iso} até {now_iso}")
+    tz_local  = pytz.timezone("America/Sao_Paulo")
+    now_local = datetime.now(tz_local)
+    now_iso   = now_local.astimezone(pytz.UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    print(f"[{now_iso}] extraindo UPDATED_TIME > {last} até {now_iso}")
 
     # 3) Extrai o delta
-    start_filter = last_iso.replace("T", " ").rstrip("Z")
-    end_filter   = now_iso.  replace("T", " ").rstrip("Z")
-
-    df = extract_incremental(start_filter, end_filter)
+    df = extract_incremental(last, now_iso)
     if df.empty:
         print("▶ nenhum registro novo ou atualizado")
     else:
