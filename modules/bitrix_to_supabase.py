@@ -93,4 +93,10 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
               .apply(adjust_history_timezone)
         )
 
-    return df[[c for c in COLUMNS if c in df.columns]]
+    # … após criar df e ajustar tudo
+    cols_to_return = [c for c in COLUMNS if c in df.columns]
+    # adiciona a coluna de debug
+    if "historic_before" in df.columns:
+        cols_to_return.append("historic_before")
+
+    return df[cols_to_return]
