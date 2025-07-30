@@ -80,13 +80,13 @@ st.markdown("---")
 
 # --- 1) Cards de métricas sempre em linha ---
 metrics = [
-    ("ABERTOS",       df_ov["TOTAL_CREATED"],   "#222222"),
-    ("FINALIZADOS",   df_ov["TOTAL_COMPLETED"], "#222222"),
+    ("CARDS CRIADOS",       df_ov["TOTAL_CREATED"],   "#222222"),
+    ("CARDS FINALIZADOS",   df_ov["TOTAL_COMPLETED"], "#222222"),
     ("% PERTINENTES", f"{df_ov['PERCENT_PERTINENTE']:.0f}%", "#222222"),
-    ("PENDENTES",     df_ov["TOTAL_ABERTOS"],   "#5A1B1B"),
-    ("CLIENTES",      total_clientes,          "#222222"),
-    ("INTERNOS",      total_internos,          "#A259FF"),
-    ("ATRASADOS",     df_ov["QTD_ATRASADOS"],   "#5A1B1B"),
+    ("CARDS PENDENTES",     df_ov["TOTAL_ABERTOS"],   "#5A1B1B"),
+    ("PENDÊNCIA CLIENTE",      total_clientes,          "#222222"),
+    ("PENDÊNCIA INTERNA",      total_internos,          "#A259FF"),
+    ("CARDS ATRASADOS",     df_ov["QTD_ATRASADOS"],   "#5A1B1B"),
 ]
 
 cols = st.columns(len(metrics), gap="small")
@@ -115,7 +115,7 @@ left, right = st.columns(2, gap="large")
 
 with left:
     # 2.1) Solicitadas há mais tempo
-    st.subheader("🕑 Solicitadas há mais tempo")
+    st.subheader("Solicitadas há mais tempo")
     df_old = load_data("OLDEST_OPEN_CARDS") \
                .rename(columns={"DIAS_UTEIS_EM_ABERTO":"D.U. Em Aberto"})
     st.dataframe(
@@ -127,7 +127,7 @@ with left:
     st.markdown("")  # espaçamento
 
     # 2.2) Ranking Solicitantes
-    st.subheader("📊 Ranking Solicitantes")
+    st.subheader("Ranking Solicitantes")
     # agora buscamos a view em snake_case
     df_rank = load_data("TICKETS_BY_SOLICITANTE")[
         ["SOLICITANTE", "CARDS_PENDENTES", "CARDS_DEVOLUTIVA", "TOTAL_CARDS_ABERTOS"]
@@ -147,7 +147,7 @@ with left:
 with right:
 
     # --- 2.2) Resumo de Abertos (donut) ---
-    st.subheader("🍩 Resumo de Abertos")
+    st.subheader("Resumo de Abertos")
 
     df_donut = load_data("resumo_abertos_donut")
 
@@ -191,7 +191,7 @@ with right:
     st.markdown("")  # espaçamento
 
     # 2.4) Solicitadas há mais tempo – Comissões
-    st.subheader("🗂️ Solicitadas há mais tempo – Comissões")
+    st.subheader("Solicitadas há mais tempo – Comissões")
     df_comm = df_old[df_old["RESPONSAVEL"] == "Comissões"]
     st.dataframe(
         df_comm[["ID","D.U. Em Aberto","SOLICITANTE","RESPONSAVEL","STAGE"]]
