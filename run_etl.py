@@ -14,8 +14,8 @@ def main():
     last = get_last_update()
 
     # 2) Marca o now para usar como próximo watermark (hora de Brasília, UTC-3)
-    now_utc   = datetime.now(pytz.utc)
-    now_local = now_utc - timedelta(hours=6)  # UTC → UTC-6 → UTC-3 (BRT)
+    brazil_tz = pytz.timezone("America/Sao_Paulo")
+    now_local = datetime.now(brazil_tz)
     now       = now_local.strftime("%Y-%m-%dT%H:%M:%SZ")
     print(f"[{now}] extraindo UPDATED_TIME > {last} até {now}")
 
@@ -27,6 +27,11 @@ def main():
         print(f"▶ upsert de {len(df)} registros")
         # **DEBUG**: mostra quais IDs serão upsertados
         print("▶ IDs extraídos para upsert:", df["ID"].tolist())
+
+        # **DEBUG**: mostra antes⇨depois do histórico
+        preview = df[["ID", "historic_before", "UF_CRM_335_AUT_HISTORICO"]]
+        print("▶ Histórico (antes ⇒ depois):")
+        print(preview.to_dict(orient="records"))
         # 4) Faz o UPSERT no Supabase
         upsert_bitrix_cards(df)
         # 5) Só depois de bem-sucedido, grava o novo watermark
