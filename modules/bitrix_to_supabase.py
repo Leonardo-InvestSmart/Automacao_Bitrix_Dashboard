@@ -56,39 +56,41 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     df = pd.DataFrame(raw[1:], columns=raw[0])
     df = df[df["CATEGORY_ID"] == BitrixFinanceiro.category_id]
 
-    # 2) Ajusta timezone nas colunas relevantes
-    for col in (
-        "UPDATED_TIME",
-        "CREATED_TIME",
-        "UF_CRM_335_AUT_ETAPA_8",
-        "UF_CRM_335_AUT_ETAPA_9",
-    ):
-        if col in df.columns:
-            df[col] = df[col].apply(convert_timezone)
-
-    # 3) Filtra incrementalmente em pandas (start < UPDATED_TIME ≤ end)
-    tz       = pytz.timezone("America/Sao_Paulo")
-    start_dt = datetime.fromisoformat(start_iso.replace("Z","")) \
-                       .astimezone(tz).replace(tzinfo=None)
-    end_dt   = datetime.fromisoformat(end_iso.  replace("Z","")) \
-                       .astimezone(tz).replace(tzinfo=None)
-
+    # 2) Parseia UPDATED_TIME em aware datetime (UTC+6) e converte para UTC
     df["UPDATED_TIME_dt"] = pd.to_datetime(
         df["UPDATED_TIME"],
         format="%Y-%m-%d %H:%M:%S",
         errors="coerce"
     )
+    server_tz = pytz.timezone("Asia/Yekaterinburg")  # ou o timezone correto do servidor Bitrix
+    df["UPDATED_TIME_dt"] = (
+        df["UPDATED_TIME_dt"]
+          .dt.tz_localize(server_tz)
+          .dt.tz_convert(pytz.UTC)
+    )
+
+    # 3) Converte start_iso/end_iso para UTC-aware
+    start_dt = datetime.strptime(start_iso, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
+    end_dt   = datetime.strptime(end_iso,   "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
+
+    # 4) Filtra pelo intervalo UTC correto
     df = df[
         (df["UPDATED_TIME_dt"] > start_dt) &
         (df["UPDATED_TIME_dt"] <= end_dt)
     ]
 
-    # 4) Ajuste de histórico (debug before⇨after)
+    # 5) Agora sim ajusta as colunas para exibição e storage
+    for col in ("UPDATED_TIME","CREATED_TIME","UF_CRM_335_AUT_ETAPA_8","UF_CRM_335_AUT_ETAPA_9"):
+        if col in df.columns:
+            df[col] = df[col].apply(convert_timezone)
+
+    # 6) Ajuste de histórico (antes⇨depois)…
     orig = df.get("UF_CRM_335_AUT_HISTORICO", pd.Series(dtype=object))
     df["historic_before"] = orig.fillna("")
     if "UF_CRM_335_AUT_HISTORICO" in df.columns:
-        df["UF_CRM_335_AUT_HISTORICO"] = df["UF_CRM_335_AUT_HISTORICO"] \
-            .apply(adjust_history_timezone)
-
+        df["UF_CRM_335_AUT_HISTORICO"] = (
+            df["UF_CRM_335_AUT_HISTORICO"]
+              .apply(adjust_history_timezone)
+        )
 
     return df[[c for c in COLUMNS if c in df.columns]]

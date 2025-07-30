@@ -1,9 +1,6 @@
 name: ETL Bitrix → Supabase
 
 on:
-  schedule:
-    # roda automaticamente de 5 em 5 minutos
-    - cron:  '5 * * * *'
   workflow_dispatch:  # permite também rodar manualmente na aba Actions
 
 jobs:
