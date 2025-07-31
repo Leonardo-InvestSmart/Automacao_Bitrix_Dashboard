@@ -46,38 +46,56 @@ def save_last_update(value: str):
       .execute()
 
 def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
-    bi = BiConnectorBx(start_date=start_iso.split("T")[0],
-                       end_date=     end_iso.split("T")[0])
+    bi = BiConnectorBx()
     # 1) Puxa todos os registros (sem filtro OR falho)
     raw = bi.get_data_default(
         table=f"crm_dynamic_items_{BitrixFinanceiro.entity_type_id}",
         fields=None
     )
     df = pd.DataFrame(raw[1:], columns=raw[0])
+    # exibe até 10 registros com ID e UPDATED_TIME para facilitar depuração
+    # converter o UPDATED_TIME do servidor (UTC+6) para BRT antes do debug
+    df["UPDATED_TIME_BRT"] = df["UPDATED_TIME"].apply(convert_timezone)
+
+    print("DEBUG RAW registros brutos (ID & UPDATED_TIME_BRT):")
+    print(df[["ID","UPDATED_TIME_BRT"]].tail(10).to_dict(orient="records"))
+    print(f"Total de registros brutos: {len(df)}")
     df = df[df["CATEGORY_ID"] == BitrixFinanceiro.category_id]
+    print(f"DEBUG Após filtro CATEGORY_ID: {len(df)} registros")
 
     # 2) Parseia UPDATED_TIME em aware datetime (UTC+6) e converte para UTC
+    # 1) converter para Brasília
+    df["UPDATED_TIME_BRT"] = df["UPDATED_TIME"].apply(convert_timezone)
+
+    # 2a) parsear UPDATED_TIME_BRT → UPDATED_TIME_dt UTC-aware
     df["UPDATED_TIME_dt"] = pd.to_datetime(
-        df["UPDATED_TIME"],
+        df["UPDATED_TIME_BRT"],
         format="%Y-%m-%d %H:%M:%S",
         errors="coerce"
-    )
-    server_tz = pytz.timezone("Asia/Yekaterinburg")  # ou o timezone correto do servidor Bitrix
-    df["UPDATED_TIME_dt"] = (
-        df["UPDATED_TIME_dt"]
-          .dt.tz_localize(server_tz)
-          .dt.tz_convert(pytz.UTC)
-    )
+    ).dt.tz_localize(pytz.timezone("America/Sao_Paulo"))
 
-    # 3) Converte start_iso/end_iso para UTC-aware (suporta offset “+00:00”)
-    start_dt = datetime.fromisoformat(start_iso).astimezone(pytz.UTC)
-    end_dt   = datetime.fromisoformat(end_iso).  astimezone(pytz.UTC)
+    # 2b) parsear CREATED_TIME_BRT → CREATED_TIME_dt UTC-aware
+    # (primeiro converta Created para BRT, igual ao Updated)
+    df["CREATED_TIME_BRT"] = df["CREATED_TIME"].apply(convert_timezone)
+    df["CREATED_TIME_dt"] = pd.to_datetime(
+        df["CREATED_TIME_BRT"],
+        format="%Y-%m-%d %H:%M:%S",
+        errors="coerce"
+    ).dt.tz_localize(pytz.timezone("America/Sao_Paulo")) \
+    .dt.tz_convert(pytz.UTC)
 
-    # 4) Filtra pelo intervalo UTC correto
-    df = df[
-        (df["UPDATED_TIME_dt"] > start_dt) &
-        (df["UPDATED_TIME_dt"] <= end_dt)
-    ]
+
+    # 3) Converte start_iso/end_iso para BRT-aware
+    brasil   = pytz.timezone("America/Sao_Paulo")
+    start_dt = datetime.fromisoformat(start_iso).astimezone(brasil)
+    end_dt   = datetime.fromisoformat(end_iso).astimezone(brasil)
+    print(f"DEBUG Intervalo BRT: {start_dt} até {end_dt}")
+
+    mask_updated = (df["UPDATED_TIME_dt"] > start_dt) & (df["UPDATED_TIME_dt"] <= end_dt)
+    mask_created = (df["CREATED_TIME_dt"] > start_dt) & (df["CREATED_TIME_dt"] <= end_dt)
+
+    df = df[ mask_updated | mask_created ]
+    print(f"DEBUG {len(df)} registros após filtro incremental; min: {df['UPDATED_TIME_dt'].min()}, max: {df['UPDATED_TIME_dt'].max()}")
 
     # 5) Agora sim ajusta as colunas para exibição e storage
     for col in ("UPDATED_TIME","CREATED_TIME","UF_CRM_335_AUT_ETAPA_8","UF_CRM_335_AUT_ETAPA_9"):
@@ -85,18 +103,12 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
             df[col] = df[col].apply(convert_timezone)
 
     # 6) Ajuste de histórico (antes⇨depois)…
-    orig = df.get("UF_CRM_335_AUT_HISTORICO", pd.Series(dtype=object))
-    df["historic_before"] = orig.fillna("")
+    # aplica o timezone-adjust apenas na coluna original, sem historic_before
     if "UF_CRM_335_AUT_HISTORICO" in df.columns:
         df["UF_CRM_335_AUT_HISTORICO"] = (
-            df["UF_CRM_335_AUT_HISTORICO"]
-              .apply(adjust_history_timezone)
+            df["UF_CRM_335_AUT_HISTORICO"].apply(adjust_history_timezone)
         )
 
-    # … após criar df e ajustar tudo
     cols_to_return = [c for c in COLUMNS if c in df.columns]
-    # adiciona a coluna de debug
-    if "historic_before" in df.columns:
-        cols_to_return.append("historic_before")
 
     return df[cols_to_return]

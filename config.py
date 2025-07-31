@@ -2,6 +2,8 @@ import streamlit as st
 import os
 from supabase import create_client
 import toml
+from dotenv import load_dotenv
+load_dotenv()
 
 
 # 1) Primeiro tenta ler do ambiente

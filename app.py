@@ -160,7 +160,8 @@ with left:
     st.dataframe(
         df_old[["ID","D.U. Em Aberto","Solicitante","Responsável","Status do Card","Descrição"]],
         use_container_width=True,
-        height=750
+        hide_index=True,
+        height=740
     )
 
     st.markdown("")  # espaçamento
@@ -173,17 +174,19 @@ with right:
     # ----- Coluna 1: Donut + Origem de Comissão -----
     with col1:
         st.subheader("Resumo de Abertos")
-        df_donut = load_data("resumo_abertos_donut")
+        df_donut = load_data("VW_STATUS_CARDS")
+        df_donut = df_donut[["RESPONSABILIDADE", "QUANTIDADE"]]
 
         fig_donut = px.pie(
             df_donut,
-            names='responsavel',
-            values='qtd',
+            names='RESPONSABILIDADE',
+            values='QUANTIDADE',
             hole=0.5,
-            color='responsavel',
+            color='RESPONSABILIDADE',
             color_discrete_map={
-                'Comissões': '#F1F1F1',
-                'Outras Áreas': '#4F4F4F'
+                'Comissões': '#A259FF',
+                'Cliente': '#F1F1F1',
+                'Externo': '#4F4F4F'
             }
         )
         # Ajusta o domínio para centralizar e coloca a legenda embaixo
@@ -221,6 +224,11 @@ with right:
         df_produto.columns = ["Produto", "Quantidade"]
         # formata cada Produto: primeira letra maiúscula, resto minúsculo
         df_produto["Produto"] = df_produto["Produto"].str.capitalize()
+
+        # renomeia "Br global" para "Diversificação"
+        df_produto["Produto"] = df_produto["Produto"].replace({
+            'Br global': 'Diversificação'
+        })
 
         fig_produto = px.bar(
             df_produto,
@@ -276,9 +284,10 @@ with right:
         # Linha de conexão cinza, texto branco e sempre fora
         fig_stage.update_traces(
             connector=dict(line=dict(color='gray', width=2)),
-            textposition='outside',
-            textfont=dict(color='white', size=16),
-            marker=dict(color='lightblue')
+            textposition='auto',
+            insidetextfont=dict(color='black', size=16),
+            outsidetextfont=dict(color='white', size=16),
+            marker=dict(color='white')
         )
         fig_stage.update_layout(
             height=750,

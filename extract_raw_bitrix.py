@@ -5,13 +5,13 @@ from datetime import datetime, timedelta
 from modules.Extracao_Filtrada_Pakas_Bitrix import BiConnectorBx, BitrixFinanceiro
 
 # Defina aqui o range que você quer inspecionar
-START_DATE = "2025-07-01"  # AAAA-MM-DD
-END_DATE   = "2025-07-30"  # AAAA-MM-DD
+START_DATE = "2025-01-01"  # AAAA-MM-DD
+END_DATE   = "2025-07-31"  # AAAA-MM-DD
 
 # Quais colunas do raw Bitrix você quer examinar?
 COLUMNS_OF_INTEREST = [
     "ID", "CATEGORY_ID", "CREATED_TIME", "UPDATED_TIME",
-    "ASSIGNED_BY_NAME", "STAGE_NAME",
+    "ASSIGNED_BY_NAME", "STAGE_NAME", "UF_CRM_335_MOTIVOCONCLUIDO",
     "UF_CRM_335_AUT_HISTORICO",
     "UF_CRM_335_AUT_ETAPA_8", "UF_CRM_335_AUT_ETAPA_9",
     # adicione aqui qualquer outra UF_CRM_* que queira ver

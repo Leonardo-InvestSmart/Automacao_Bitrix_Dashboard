@@ -95,17 +95,8 @@ def upsert_bitrix_cards(df) -> None:
     chunk_size = 100
     for i in range(0, len(records), chunk_size):
         chunk = records[i : i + chunk_size]
-        try:
-            supabase.table("BITRIX_CARDS") \
-                     .upsert(chunk, on_conflict="ID") \
-                     .execute()
-            print(f"✅ Upsert OK registros {i}–{i+len(chunk)-1}")
-        except APIError as e:
-            print(f"❌ Erro no chunk {i}–{i+len(chunk)-1}: {e}")
-            for single in chunk:
-                try:
-                    supabase.table("BITRIX_CARDS") \
-                             .upsert([single], on_conflict="ID") \
-                             .execute()
-                except APIError as ex:
-                    print(f"    • Falha no ID {single.get('ID')}: {ex}")
+        resp = supabase.table("BITRIX_CARDS") \
+                    .upsert(chunk, on_conflict="ID") \
+                    .execute()
+        print(f"✅ Upsert OK registros {i}–{i+len(chunk)-1}")
+        print(f"→ Retorno Supabase: {resp.data or resp.error}")
