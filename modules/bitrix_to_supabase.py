@@ -81,14 +81,26 @@ def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
         df["CREATED_TIME_BRT"],
         format="%Y-%m-%d %H:%M:%S",
         errors="coerce"
-    ).dt.tz_localize(pytz.timezone("America/Sao_Paulo")) \
-    .dt.tz_convert(pytz.UTC)
+    ).dt.tz_localize(pytz.timezone("America/Sao_Paulo"))
 
 
     # 3) Converte start_iso/end_iso para BRT-aware
-    brasil   = pytz.timezone("America/Sao_Paulo")
-    start_dt = datetime.fromisoformat(start_iso).astimezone(brasil)
-    end_dt   = datetime.fromisoformat(end_iso).astimezone(brasil)
+    brasil = pytz.timezone("America/Sao_Paulo")
+
+    # start_iso → datetime. Se vier sem tzinfo, assume BRT
+    start_dt = datetime.fromisoformat(start_iso)
+    if start_dt.tzinfo is None:
+        start_dt = brasil.localize(start_dt)
+    else:
+        start_dt = start_dt.astimezone(brasil)
+
+    # idem para end_iso
+    end_dt = datetime.fromisoformat(end_iso)
+    if end_dt.tzinfo is None:
+        end_dt = brasil.localize(end_dt)
+    else:
+        end_dt = end_dt.astimezone(brasil)
+
     print(f"DEBUG Intervalo BRT: {start_dt} até {end_dt}")
 
     mask_updated = (df["UPDATED_TIME_dt"] > start_dt) & (df["UPDATED_TIME_dt"] <= end_dt)

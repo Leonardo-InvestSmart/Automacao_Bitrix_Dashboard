@@ -32,10 +32,12 @@ def upsert_bitrix_cards(df) -> None:
                     dayfirst=True,
                     errors="coerce"
                 )
-            # considera essa string como UTC diretamente
-            parsed = parsed.dt.tz_localize(pytz.UTC)
-            iso = parsed.dt.strftime("%Y-%m-%dT%H:%M:%SZ")
-            df_clean[col] = iso.where(iso.notna(), None)
+            # considera essa string como BRT diretamente
+            parsed = parsed.dt.tz_localize(pytz.timezone("America/Sao_Paulo"))
+            # isoformat inclui "-03:00"; aplica elementwise
+            df_clean[col] = parsed.map(
+                lambda dt: dt.isoformat() if pd.notnull(dt) else None
+            )
 
 
     # **3) Convertendo NPS para int puro**

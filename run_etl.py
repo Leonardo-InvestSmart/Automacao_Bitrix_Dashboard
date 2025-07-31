@@ -12,9 +12,10 @@ from modules.bitrix_to_supabase import (
 def main():
     try:
         last = get_last_update()
-        brazil_tz = pytz.timezone("America/Sao_Paulo")
-        now_local = datetime.now(brazil_tz)
-        now       = now_local.strftime("%Y-%m-%dT%H:%M:%S")
+        brasil    = pytz.timezone("America/Sao_Paulo")
+        now_local = datetime.now(brasil)
+        # isoformat inclui automaticamente "-03:00"
+        now       = now_local.isoformat()
         print(f"[{now}] extraindo UPDATED_TIME > {last} até {now}")
 
         df = extract_incremental(last, now)
