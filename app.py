@@ -4,6 +4,7 @@ import plotly.express as px
 from config import supabase
 from streamlit_autorefresh import st_autorefresh
 import datetime
+import pytz
 
 # --- Configuração da página ---
 st.set_page_config(
@@ -306,9 +307,13 @@ with right:
         st.plotly_chart(fig_stage, use_container_width=True)
 
     # ─── nova linha de atualização ───
+    # definir timezone de Brasília
+    br_tz = pytz.timezone("America/Sao_Paulo")
+
+    # ─── nova linha de atualização ───
     st.markdown(
-        f"<div style='text-align:right; color:#0f0; font-size:1rem; margin-top:-2rem;'>"
-        f"🕒 Última atualização: {datetime.datetime.now():%d/%m/%Y %H:%M:%S}"
+        "<div style='text-align:right; color:#0f0; font-size:1rem; margin-top:-2rem;'>"
+        f"🕒 Última atualização: {datetime.datetime.now(br_tz):%d/%m/%Y %H:%M:%S}"
         "</div>",
         unsafe_allow_html=True
     )
