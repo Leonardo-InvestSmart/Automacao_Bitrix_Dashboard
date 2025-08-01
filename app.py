@@ -141,13 +141,21 @@ left, right = st.columns(2, gap="large")
 
 with left:
     # 2.1) Solicitadas há mais tempo
-    st.subheader("Solicitadas há mais tempo")
+    st.subheader("Solicitadas há mais tempo - Comissões")
     df_old = load_data("OLDEST_OPEN_CARDS") \
-               .rename(columns={"DIAS_UTEIS_EM_ABERTO":"D.U. Em Aberto", "SOLICITANTE":"Solicitante", "RESPONSAVEL":"Responsável", "STAGE":"Status do Card"}) \
+            .rename(columns={
+                "DIAS_UTEIS_EM_ABERTO":"D.U. Em Aberto",
+                "SOLICITANTE":"Solicitante",
+                "RESPONSAVEL":"Responsável",
+                "STAGE":"Status do Card"
+            })
 
     # — Ajusta case: primeira letra maiúscula, resto minúsculo
     for col in ["Solicitante", "Responsável", "Status do Card"]:
         df_old[col] = df_old[col].str.capitalize()
+
+    # — Filtra apenas status de Comissões
+    df_old = df_old.loc[~df_old["Status do Card"].isin(["Devolutiva", "Dados incompletos"])]
 
     # — Cria coluna "Descrição" truncada a 10 palavras
     def truncate_desc(text, max_words=9):
@@ -157,6 +165,17 @@ with left:
         return " ".join(words[:max_words]) + "..." if len(words) > max_words else text
 
     df_old["Descrição"] = df_old["DESCRICAO_PROBLEMA"].apply(truncate_desc)
+
+    # — Injeta CSS para aumentar fonte da tabela
+    st.markdown("""
+    <style>
+    .stDataFrame table, 
+    .stDataFrame th, 
+    .stDataFrame td {
+        font-size: 20px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     st.dataframe(
         df_old[["ID","D.U. Em Aberto","Solicitante","Responsável","Status do Card","Descrição"]],
