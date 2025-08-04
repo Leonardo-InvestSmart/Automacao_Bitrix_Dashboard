@@ -1,0 +1,58 @@
+Defaulting to user installation because normal site-packages is not writeable
+Requirement already satisfied: supabase in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (2.16.0)
+Collecting supabase
+  Downloading supabase-2.17.0-py3-none-any.whl.metadata (11 kB)
+Collecting gotrue==2.12.3 (from supabase)
+  Downloading gotrue-2.12.3-py3-none-any.whl.metadata (6.5 kB)
+Requirement already satisfied: httpx<0.29,>=0.26 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from supabase) (0.28.1)
+Requirement already satisfied: postgrest==1.1.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from supabase) (1.1.1)
+Collecting realtime==2.6.0 (from supabase)
+  Downloading realtime-2.6.0-py3-none-any.whl.metadata (6.6 kB)
+Requirement already satisfied: storage3==0.12.0 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from supabase) (0.12.0)
+Requirement already satisfied: supafunc==0.10.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from supabase) (0.10.1)
+Requirement already satisfied: pydantic<3,>=1.10 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from gotrue==2.12.3->supabase) (2.11.4)
+Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from gotrue==2.12.3->supabase) (2.10.1)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from postgrest==1.1.1->supabase) (2.1.0)
+Collecting pydantic<3,>=1.10 (from gotrue==2.12.3->supabase)
+  Downloading pydantic-2.11.7-py3-none-any.whl.metadata (67 kB)
+Requirement already satisfied: typing-extensions>=4.14.0 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from realtime==2.6.0->supabase) (4.14.0)
+Requirement already satisfied: websockets<16,>=11 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from realtime==2.6.0->supabase) (15.0.1)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.8.2 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from storage3==0.12.0->supabase) (2.9.0.post0)
+Requirement already satisfied: strenum<0.5.0,>=0.4.15 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from supafunc==0.10.1->supabase) (0.4.15)
+Requirement already satisfied: packaging in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from deprecation<3.0.0,>=2.1.0->postgrest==1.1.1->supabase) (24.2)
+Requirement already satisfied: anyio in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpx<0.29,>=0.26->supabase) (4.9.0)
+Requirement already satisfied: certifi in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpx<0.29,>=0.26->supabase) (2025.4.26)
+Requirement already satisfied: httpcore==1.* in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpx<0.29,>=0.26->supabase) (1.0.9)
+Requirement already satisfied: idna in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpx<0.29,>=0.26->supabase) (3.10)
+Requirement already satisfied: h11>=0.16 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpcore==1.*->httpx<0.29,>=0.26->supabase) (0.16.0)
+Requirement already satisfied: h2<5,>=3 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase) (4.2.0)
+Requirement already satisfied: hyperframe<7,>=6.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase) (6.1.0)
+Requirement already satisfied: hpack<5,>=4.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase) (4.1.0)
+Requirement already satisfied: annotated-types>=0.6.0 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (0.4.0)
+Requirement already satisfied: six>=1.5 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from python-dateutil<3.0.0,>=2.8.2->storage3==0.12.0->supabase) (1.17.0)
+Requirement already satisfied: sniffio>=1.1 in c:\users\leonardo.naar\appdata\roaming\python\python311\site-packages (from anyio->httpx<0.29,>=0.26->supabase) (1.3.1)
+Downloading supabase-2.17.0-py3-none-any.whl (17 kB)
+Downloading gotrue-2.12.3-py3-none-any.whl (44 kB)
+Downloading realtime-2.6.0-py3-none-any.whl (21 kB)
+Downloading pydantic-2.11.7-py3-none-any.whl (444 kB)
+Installing collected packages: pydantic, realtime, gotrue, supabase
+  Attempting uninstall: pydantic
+    Found existing installation: pydantic 2.11.4
+    Uninstalling pydantic-2.11.4:
+      Successfully uninstalled pydantic-2.11.4
+  Attempting uninstall: realtime
+    Found existing installation: realtime 2.5.3
+    Uninstalling realtime-2.5.3:
+      Successfully uninstalled realtime-2.5.3
+  Attempting uninstall: gotrue
+    Found existing installation: gotrue 2.12.2
+    Uninstalling gotrue-2.12.2:
+      Successfully uninstalled gotrue-2.12.2
+  Attempting uninstall: supabase
+    Found existing installation: supabase 2.16.0
+    Uninstalling supabase-2.16.0:
+      Successfully uninstalled supabase-2.16.0
+
+Successfully installed gotrue-2.12.3 pydantic-2.11.7 realtime-2.6.0 supabase-2.17.0

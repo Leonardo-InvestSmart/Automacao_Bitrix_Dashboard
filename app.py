@@ -5,6 +5,43 @@ from config import supabase
 from streamlit_autorefresh import st_autorefresh
 import datetime
 import pytz
+import os
+import asyncio
+import threading
+from supabase import acreate_client
+from supabase.client import AsyncClient
+
+# ─── Inscrição Realtime assíncrona em BITRIX_CARDS ───
+if 'rt_thread' not in st.session_state:
+    def _on_change(payload):
+        # limpa qualquer cache do Streamlit e força rerun
+        try:
+            st.cache_data.clear()
+        except:
+            pass
+        st.experimental_rerun()
+
+    async def _subscribe_realtime():
+        supabase_async: AsyncClient = await acreate_client(
+            os.environ["SUPABASE_URL"],
+            os.environ["SUPABASE_KEY"]
+        )
+        # inscreve nos eventos de INSERT/UPDATE/DELETE
+        await (
+            supabase_async
+              .channel("realtime:public:BITRIX_CARDS")
+              .on_postgres_changes("*", schema="public", table="BITRIX_CARDS", callback=_on_change)
+              .subscribe()
+        )
+
+    def _start_realtime_loop():
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(_subscribe_realtime())
+        loop.run_forever()
+
+    threading.Thread(target=_start_realtime_loop, daemon=True).start()
+    st.session_state['rt_thread'] = True
 
 # --- Configuração da página ---
 st.set_page_config(
@@ -14,7 +51,7 @@ st.set_page_config(
 )
 
 # Atualiza a cada 5 minutos (300.000 milissegundos)
-st_autorefresh(interval=300000, key="refresh")
+# st_autorefresh(interval=300000, key="refresh")
 
 # --- CSS para cards e estilo geral ---
 st.markdown("""
@@ -52,7 +89,6 @@ h1 {
 """, unsafe_allow_html=True)
 
 # --- Helper para carregar views ---
-@st.cache_data
 def load_data(view_name: str) -> pd.DataFrame:
     resp = supabase.table(view_name).select("*").execute()
     return pd.DataFrame(resp.data)
