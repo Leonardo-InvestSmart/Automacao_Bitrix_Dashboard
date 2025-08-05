@@ -50,8 +50,8 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# Atualiza a cada 5 minutos (300.000 milissegundos)
-# st_autorefresh(interval=300000, key="refresh")
+# Atualiza a cada 2,5 minutos (150.000 milissegundos)
+st_autorefresh(interval=150000, key="refresh")
 
 # --- CSS para cards e estilo geral ---
 st.markdown("""
