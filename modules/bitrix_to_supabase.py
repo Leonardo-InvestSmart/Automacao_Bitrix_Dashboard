@@ -25,34 +25,75 @@ COLUMNS = [
     "UF_CRM_335_NPS", "UF_CRM_335_FEEDBAC_NPS",
 ]
 
+def _extract_data(resp):
+    """
+    Torna compatível com supabase-py/postgrest diferentes:
+    - objeto com atributo .data
+    - dict já com 'data'
+    - lista/dict direto
+    - None
+    """
+    if resp is None:
+        return None
+    if hasattr(resp, "data"):
+        return resp.data
+    if isinstance(resp, dict):
+        return resp.get("data", resp)
+    return resp  # pode ser list/obj semelhante
+
 def get_last_update() -> str:
-    resp = (
-        supabase.table("ETL_CONTROL")
-        .select("last_updated")
-        .eq("source_table", "BITRIX_CARDS")
-        .maybe_single()            # ← em vez de .single()
-        .execute()
-    )
+    try:
+        resp = (
+            supabase.table("ETL_CONTROL")
+            .select("last_updated")
+            .eq("source_table", "BITRIX_CARDS")
+            .maybe_single()
+            .execute()
+        )
+    except Exception as e:
+        # Se o client retornar exceção (ex.: método ausente),
+        # cai para uma consulta "normal" que sempre funciona.
+        resp = (
+            supabase.table("ETL_CONTROL")
+            .select("last_updated")
+            .eq("source_table", "BITRIX_CARDS")
+            .execute()
+        )
 
-    if resp.data and resp.data.get("last_updated"):
-        return resp.data["last_updated"]
+    data = _extract_data(resp)
 
-    # não existe linha ainda → cria uma watermark segura (agora - 1 dia, em BRT)
+    # Quando vem lista (0, 1 ou N linhas)
+    if isinstance(data, list):
+        if len(data) == 1 and isinstance(data[0], dict) and "last_updated" in data[0]:
+            return data[0]["last_updated"]
+        else:
+            data = None  # 0 ou >1 → trata como ausente
+
+    # Quando já veio dict único
+    if isinstance(data, dict) and data.get("last_updated"):
+        return data["last_updated"]
+
+    # Não existe linha ainda → semeia uma watermark segura (BRT -1 dia)
     br = pytz.timezone("America/Sao_Paulo")
     initial_dt = (datetime.now(br) - timedelta(days=1)).isoformat()
+
     supabase.table("ETL_CONTROL").upsert(
         {"source_table": "BITRIX_CARDS", "last_updated": initial_dt},
         on_conflict="source_table"
     ).execute()
+
     return initial_dt
 
 
+
 def save_last_update(value: str):
-    # value deve estar em ISO com tz (ex.: 2025-08-20T12:34:56-03:00)
-    supabase.table("ETL_CONTROL").upsert(
-        {"source_table": "BITRIX_CARDS", "last_updated": value},
-        on_conflict="source_table"
-    ).execute()
+    try:
+        supabase.table("ETL_CONTROL").upsert(
+            {"source_table": "BITRIX_CARDS", "last_updated": value},
+            on_conflict="source_table"
+        ).execute()
+    except Exception as e:
+        print(f"⚠ Não foi possível atualizar watermark: {e}")
 
 def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     bi = BiConnectorBx()
