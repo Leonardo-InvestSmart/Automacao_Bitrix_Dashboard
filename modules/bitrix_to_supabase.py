@@ -26,24 +26,33 @@ COLUMNS = [
 ]
 
 def get_last_update() -> str:
-    resp = supabase \
-      .table("ETL_CONTROL") \
-      .select("last_updated") \
-      .eq("source_table", "BITRIX_CARDS") \
-      .single() \
-      .execute()
+    resp = (
+        supabase.table("ETL_CONTROL")
+        .select("last_updated")
+        .eq("source_table", "BITRIX_CARDS")
+        .maybe_single()            # ← em vez de .single()
+        .execute()
+    )
 
     if resp.data and resp.data.get("last_updated"):
         return resp.data["last_updated"]
-    # fallback:
-    dt = datetime.now(pytz.utc) - timedelta(days=1)
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    # não existe linha ainda → cria uma watermark segura (agora - 1 dia, em BRT)
+    br = pytz.timezone("America/Sao_Paulo")
+    initial_dt = (datetime.now(br) - timedelta(days=1)).isoformat()
+    supabase.table("ETL_CONTROL").upsert(
+        {"source_table": "BITRIX_CARDS", "last_updated": initial_dt},
+        on_conflict="source_table"
+    ).execute()
+    return initial_dt
 
 
 def save_last_update(value: str):
-    supabase.table("ETL_CONTROL") \
-      .upsert({"source_table":"BITRIX_CARDS","last_updated":value}, on_conflict="source_table") \
-      .execute()
+    # value deve estar em ISO com tz (ex.: 2025-08-20T12:34:56-03:00)
+    supabase.table("ETL_CONTROL").upsert(
+        {"source_table": "BITRIX_CARDS", "last_updated": value},
+        on_conflict="source_table"
+    ).execute()
 
 def extract_incremental(start_iso: str, end_iso: str) -> pd.DataFrame:
     bi = BiConnectorBx()

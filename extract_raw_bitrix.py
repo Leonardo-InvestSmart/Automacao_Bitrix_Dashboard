@@ -41,5 +41,4 @@ if __name__ == "__main__":
     # Salva para Excel e CSV, para você abrir no Excel/Power BI etc
     now = datetime.now().strftime("%Y%m%d_%H%M%S")
     df.to_excel(f"raw_bitrix_{now}.xlsx", index=False, engine="openpyxl")
-    df.to_csv (f"raw_bitrix_{now}.csv",  index=False)
-    print(f"\nArquivos gravados em raw_bitrix_{now}.xlsx/.csv")
+    print(f"\nArquivo gravado em raw_bitrix_{now}.xlsx")
