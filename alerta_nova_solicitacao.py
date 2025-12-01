@@ -112,7 +112,7 @@ def carregar_cards_nova_solicitacao() -> pd.DataFrame:
     """
     resp = (
         supabase.table("BITRIX_CARDS")
-        .select("ID, STAGE_NAME, UF_CRM_335_AUT_HISTORICO")
+        .select("ID, STAGE_NAME, UF_CRM_335_AUT_HISTORICO, UF_CRM_335_USUARIO_SOLICITANTE")
         .eq("STAGE_NAME", "Nova Solicitação")
         .execute()
     )
@@ -156,6 +156,21 @@ def classificar_cards(df: pd.DataFrame) -> pd.DataFrame:
 # ==============================
 # E-mail
 # ==============================
+def formatar_horas_uteis(horas: float | None) -> str:
+    """
+    Converte horas decimais em string HH:MM.
+    Ex.: 0.57 -> '00:34'
+    """
+    if horas is None:
+        return "-"
+    if horas < 0:
+        horas = 0
+    total_minutos = int(round(horas * 60))
+    h = total_minutos // 60
+    m = total_minutos % 60
+    return f"{h:02d}:{m:02d}"
+
+
 def montar_corpo_email(df: pd.DataFrame) -> str:
     """
     Monta um corpo de e-mail em HTML com:
@@ -182,28 +197,43 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
     # Pequena tabela
     linhas = []
     for _, row in df.sort_values("HORAS_NS", ascending=False).iterrows():
+        cor = (row.get("COR") or "").upper()
+
+        if cor == "VERMELHO":
+            bg_color = "#ffe5e5"
+        elif cor == "LARANJA":
+            bg_color = "#fff3e0"
+        elif cor == "AMARELO":
+            bg_color = "#fffde7"
+        else:
+            bg_color = "#ffffff"
+
+        horas_fmt = formatar_horas_uteis(row.get("HORAS_NS"))
+        solicitante = row.get("UF_CRM_335_USUARIO_SOLICITANTE", "") or ""
+
         linhas.append(
             f"""
-            <tr>
-            <td>{row.get("ID")}</td>
-            <td>{row.get("COR")}</td>
-            <td>{row.get("HORAS_NS"):.2f}</td>
+            <tr style="background-color:{bg_color};">
+              <td>{row.get("ID")}</td>
+              <td>{solicitante}</td>
+              <td>{horas_fmt}</td>
             </tr>
             """
         )
 
+
     tabela_html = """
     <table border="1" cellspacing="0" cellpadding="4">
-    <thead>
+      <thead>
         <tr>
-        <th>ID</th>
-        <th>Classificação</th>
-        <th>Horas úteis em Nova Solicitação</th>
+          <th>ID</th>
+          <th>Solicitante</th>
+          <th>Horas úteis em Nova Solicitação</th>
         </tr>
-    </thead>
-    <tbody>
+      </thead>
+      <tbody>
         {linhas}
-    </tbody>
+      </tbody>
     </table>
     """.format(
         linhas="\n".join(linhas)
