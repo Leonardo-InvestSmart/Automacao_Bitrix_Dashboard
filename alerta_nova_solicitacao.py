@@ -112,7 +112,7 @@ def carregar_cards_nova_solicitacao() -> pd.DataFrame:
     """
     resp = (
         supabase.table("BITRIX_CARDS")
-        .select("ID, TITLE, STAGE_NAME, UF_CRM_335_AUT_HISTORICO")
+        .select("ID, STAGE_NAME, UF_CRM_335_AUT_HISTORICO")
         .eq("STAGE_NAME", "Nova Solicitação")
         .execute()
     )
@@ -185,27 +185,25 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
         linhas.append(
             f"""
             <tr>
-              <td>{row.get("ID")}</td>
-              <td>{row.get("TITLE", "")}</td>
-              <td>{row.get("COR")}</td>
-              <td>{row.get("HORAS_NS"):.2f}</td>
+            <td>{row.get("ID")}</td>
+            <td>{row.get("COR")}</td>
+            <td>{row.get("HORAS_NS"):.2f}</td>
             </tr>
             """
         )
 
     tabela_html = """
     <table border="1" cellspacing="0" cellpadding="4">
-      <thead>
+    <thead>
         <tr>
-          <th>ID</th>
-          <th>Título</th>
-          <th>Classificação</th>
-          <th>Horas úteis em Nova Solicitação</th>
+        <th>ID</th>
+        <th>Classificação</th>
+        <th>Horas úteis em Nova Solicitação</th>
         </tr>
-      </thead>
-      <tbody>
+    </thead>
+    <tbody>
         {linhas}
-      </tbody>
+    </tbody>
     </table>
     """.format(
         linhas="\n".join(linhas)
