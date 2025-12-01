@@ -10,3 +10,5 @@ plotly
 openpyxl
 python-dotenv 
 streamlit-autorefresh
+workalendar
+msal
