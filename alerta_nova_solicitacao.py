@@ -18,8 +18,6 @@ DESTINATARIOS = [
     "orlando.mengali@investsmart.com.br",
 ]
 
-
-
 # ==============================
 # Cálculo de horas úteis
 # ==============================
@@ -112,7 +110,7 @@ def carregar_cards_nova_solicitacao() -> pd.DataFrame:
     """
     resp = (
         supabase.table("BITRIX_CARDS")
-        .select("ID, STAGE_NAME, UF_CRM_335_AUT_HISTORICO, UF_CRM_335_USUARIO_SOLICITANTE")
+        .select("ID, STAGE_NAME, CREATED_TIME, UF_CRM_335_USUARIO_SOLICITANTE")
         .eq("STAGE_NAME", "Nova Solicitação")
         .execute()
     )
@@ -125,6 +123,32 @@ def carregar_cards_nova_solicitacao() -> pd.DataFrame:
     return df
 
 
+def horas_uteis_desde_created(created_str: str) -> float | None:
+    """
+    Calcula horas úteis entre CREATED_TIME e o momento atual.
+    Usamos a mesma lógica de calculate_business_hours, só mudando a origem.
+    """
+    if not isinstance(created_str, str) or not created_str.strip():
+        return None
+
+    try:
+        # Pandas lida bem com ISO, UTC, etc.
+        ts = pd.to_datetime(created_str)
+    except Exception:
+        return None
+
+    # Normaliza para timezone de SP
+    if ts.tzinfo is None:
+        # Se vier sem timezone, assumimos horário local SP
+        start_dt = BR_TZ.localize(ts.to_pydatetime())
+    else:
+        # Converte de qualquer timezone para SP
+        start_dt = ts.tz_convert(BR_TZ).to_pydatetime()
+
+    now_dt = datetime.now(BR_TZ)
+    return calculate_business_hours(start_dt, now_dt)
+
+
 def classificar_cards(df: pd.DataFrame) -> pd.DataFrame:
     """
     Enriquece o DataFrame com HORAS_NS e COR (VERMELHO/LARANJA/AMARELO).
@@ -133,7 +157,8 @@ def classificar_cards(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
     df = df.copy()
-    df["HORAS_NS"] = df["UF_CRM_335_AUT_HISTORICO"].apply(horas_uteis_parado_nova_solicitacao)
+    # Agora o cálculo de horas úteis é baseado em CREATED_TIME
+    df["HORAS_NS"] = df["CREATED_TIME"].apply(horas_uteis_desde_created)
 
     def _classify(h):
         if h is None:
@@ -151,7 +176,6 @@ def classificar_cards(df: pd.DataFrame) -> pd.DataFrame:
     # Só mantém quem conseguiu calcular horas
     df = df[df["HORAS_NS"].notna()].reset_index(drop=True)
     return df
-
 
 # ==============================
 # E-mail
