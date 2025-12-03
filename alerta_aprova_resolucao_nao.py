@@ -23,7 +23,7 @@ DESTINATARIOS = [
 def carregar_cards_resolucao_nao() -> pd.DataFrame:
     """
     Lê da tabela BITRIX_CARDS apenas os cards com:
-      - UF_CRM_335_APROVA_RESOLUCAO = 'NAO'
+      - UF_CRM_335_APROVA_RESOLUCAO = 'NÃO'
       - STAGE_NAME != 'Concluído'
       - STAGE_NAME != 'Cancelado'
     """
@@ -36,7 +36,7 @@ def carregar_cards_resolucao_nao() -> pd.DataFrame:
             "UF_CRM_335_USUARIO_SOLICITANTE, "
             "CREATED_TIME"
         )
-        .eq("UF_CRM_335_APROVA_RESOLUCAO", "NAO")
+        .eq("UF_CRM_335_APROVA_RESOLUCAO", "NÃO")
         .neq("STAGE_NAME", "Concluído")
         .neq("STAGE_NAME", "Cancelado")
         .execute()
@@ -57,11 +57,11 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
     """
     Monta corpo do e-mail em HTML com:
     - Resumo por estágio
-    - Tabela de cards pendentes de resolução (APROVA_RESOLUCAO = NAO)
+    - Tabela de cards pendentes de resolução (APROVA_RESOLUCAO = "NÃO")
     """
     if df.empty:
         return """
-        <p>Não há cards com <b>UF_CRM_335_APROVA_RESOLUCAO = "NAO"</b> em aberto
+        <p>Não há cards com <b>UF_CRM_335_APROVA_RESOLUCAO = "NÃO"</b> em aberto
         (não concluídos/cancelados) no momento.</p>
         """
 
@@ -119,7 +119,7 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
 
     html = f"""
     <p>Segue o status dos cards com
-       <b>UF_CRM_335_APROVA_RESOLUCAO = "NAO"</b>
+       <b>UF_CRM_335_APROVA_RESOLUCAO = "NÃO"</b>
        e estágio diferente de <b>Concluído</b> e <b>Cancelado</b>:</p>
 
     <p><b>Resumo por estágio:</b></p>
@@ -138,7 +138,7 @@ def enviar_email(df: pd.DataFrame):
     """
     corpo_html_tabela = montar_corpo_email(df)
     agora = datetime.now(BR_TZ).strftime("%d/%m/%Y %H:%M")
-    assunto = f"[Financeiro] Cards com resolução pendente (APROVA_RESOLUCAO = NAO) - {agora}"
+    assunto = f"[Financeiro] Cards com resolução pendente (APROVA_RESOLUCAO = NÃO) - {agora}"
 
     ok = enviar_resumo_email(
         destinatarios=DESTINATARIOS,
@@ -157,7 +157,7 @@ def enviar_email(df: pd.DataFrame):
 # Main
 # ==============================
 def main():
-    print("▶ Carregando cards com APROVA_RESOLUCAO = 'NAO' e não concluídos/cancelados...")
+    print("▶ Carregando cards com APROVA_RESOLUCAO = 'NÃO' e não concluídos/cancelados...")
     df = carregar_cards_resolucao_nao()
     print(f"Total de cards encontrados: {len(df)}")
 
