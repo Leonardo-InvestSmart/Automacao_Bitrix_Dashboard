@@ -8,7 +8,7 @@ on:
     - cron: "0 12 * * 1-5"
 
 jobs:
-  alerta-aprova-resolucao-nao:
+  alerta-aprova_resolucao_nao:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,9 +26,14 @@ jobs:
 
       - name: Rodar alerta de resolução NAO
         env:
-          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
-          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
-          # Outras vars de ambiente que o seu config.py / email_service usam
+          # Supabase
+          SUPABASE_URL:      ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:      ${{ secrets.SUPABASE_KEY }}
+          # Azure / Graph (mesma config do SmartC)
+          AZURE_TENANT_ID:   ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID:   ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          EMAIL_USER:        ${{ secrets.EMAIL_USER }}
         run: |
           python alerta_aprova_resolucao_nao.py
-          # Se o script estiver em outra pasta, ajustar o caminho aqui
+
