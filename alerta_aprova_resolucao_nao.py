@@ -34,11 +34,11 @@ def carregar_cards_resolucao_nao() -> pd.DataFrame:
             "STAGE_NAME, "
             "UF_CRM_335_APROVA_RESOLUCAO, "
             "UF_CRM_335_USUARIO_SOLICITANTE, "
+            "ASSIGNED_BY_NAME, "
             "CREATED_TIME"
         )
         .eq("UF_CRM_335_APROVA_RESOLUCAO", "NÃO")
-        .neq("STAGE_NAME", "Concluído")
-        .neq("STAGE_NAME", "Cancelado")
+        .eq("STAGE_NAME", "Retorno Devolutiva")
         .execute()
     )
 
@@ -65,26 +65,37 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
         (não concluídos/cancelados) no momento.</p>
         """
 
-    # Resumo por estágio
-    resumo_stage = (
-        df.groupby("STAGE_NAME")["ID"]
+    # Resumo por responsável
+    resumo_responsavel = (
+        df.groupby("ASSIGNED_BY_NAME")["ID"]
         .count()
         .sort_values(ascending=False)
     )
 
     linhas_resumo = []
-    for stage, qtd in resumo_stage.items():
-        linhas_resumo.append(f"<li><b>{stage}:</b> {qtd} card(s)</li>")
+    for responsavel, qtd in resumo_responsavel.items():
+        nome_resp = responsavel or "Sem responsável"
+        linhas_resumo.append(f"<li><b>{nome_resp}:</b> {qtd} card(s)</li>")
 
     resumo_html = "<ul>" + "\n".join(linhas_resumo) + "</ul>"
 
     # Tabela detalhada
-    # Tabela detalhada
     linhas = []
-    for _, row in df.sort_values("STAGE_NAME").iterrows():
+    for _, row in df.sort_values("ASSIGNED_BY_NAME").iterrows():
         solicitante = row.get("UF_CRM_335_USUARIO_SOLICITANTE") or ""
         stage = row.get("STAGE_NAME") or ""
-        created_time = row.get("CREATED_TIME") or ""
+        responsavel = row.get("ASSIGNED_BY_NAME") or ""
+        created_time_raw = row.get("CREATED_TIME") or ""
+
+        # Formata "2025-11-12T10:01:15" -> "12/11/2025 às 10:01"
+        created_time_fmt = created_time_raw
+        if created_time_raw:
+            try:
+                dt = datetime.fromisoformat(str(created_time_raw).replace("Z", ""))
+                created_time_fmt = dt.strftime("%d/%m/%Y às %H:%M")
+            except Exception:
+                # Se der erro na conversão, deixa o valor original
+                created_time_fmt = created_time_raw
 
         linhas.append(
             f"""
@@ -92,10 +103,12 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
               <td>{row.get("ID")}</td>
               <td>{stage}</td>
               <td>{solicitante}</td>
-              <td>{created_time}</td>
+              <td>{responsavel}</td>
+              <td>{created_time_fmt}</td>
             </tr>
             """
         )
+
 
 
     tabela_html = """
@@ -105,6 +118,7 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
           <th>ID</th>
           <th>Estágio Atual</th>
           <th>Solicitante</th>
+          <th>Responsável</th>
           <th>Data de Criação</th>
         </tr>
       </thead>
@@ -120,9 +134,9 @@ def montar_corpo_email(df: pd.DataFrame) -> str:
     html = f"""
     <p>Segue o status dos cards com
        <b>UF_CRM_335_APROVA_RESOLUCAO = "NÃO"</b>
-       e estágio diferente de <b>Concluído</b> e <b>Cancelado</b>:</p>
+       e estágio igual a <b>Retorno Devolutiva</b>:</p>
 
-    <p><b>Resumo por estágio:</b></p>
+    <p><b>Resumo por responsável:</b></p>
     {resumo_html}
 
     <p><b>Detalhamento dos cards:</b></p>
