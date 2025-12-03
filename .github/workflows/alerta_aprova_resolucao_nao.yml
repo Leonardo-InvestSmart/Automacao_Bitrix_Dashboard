@@ -1,0 +1,34 @@
+name: Alerta - Cards com APROVA_RESOLUCAO = NAO
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Rodar em dias úteis às 09:00 (Horário de Brasília / UTC-3)
+    # 09:00 BRT -> 12:00 UTC
+    - cron: "0 12 * * 1-5"
+
+jobs:
+  alerta-aprova-resolucao-nao:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Instalar dependências
+        run: |
+          pip install -r requirements.txt
+
+      - name: Rodar alerta de resolução NAO
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+          # Outras vars de ambiente que o seu config.py / email_service usam
+        run: |
+          python alerta_aprova_resolucao_nao.py
+          # Se o script estiver em outra pasta, ajustar o caminho aqui
