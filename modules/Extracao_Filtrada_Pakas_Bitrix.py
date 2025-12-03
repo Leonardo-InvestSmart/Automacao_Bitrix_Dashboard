@@ -272,6 +272,7 @@ def extract_all_bitrix_data():
         "UF_CRM_335_TIPO_COMISSAO",
         "UF_CRM_335_USUARIO_SOLICITANTE",
         "UF_CRM_335_ORIGEM_COMISSAO",
+        "UF_CRM_335_APROVA_RESOLUCAO",
         "UF_CRM_335_DESCRICAO_PROBLEMA_COMISSOES",
         "MOVED_BY_NAME",
         "UF_CRM_335_AUT_HISTORICO",
@@ -285,6 +286,7 @@ def extract_all_bitrix_data():
         "UF_CRM_335_NPS",
         "UF_CRM_335_FEEDBAC_NPS"
     ]
+
 
     # Verificar quais colunas de interesse estão disponíveis nos dados
     available_columns = [col for col in columns_of_interest if col in df_cards.columns]
