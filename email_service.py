@@ -1,6 +1,6 @@
+import base64
 import msal
 import requests
-import base64
 
 from config import CLIENT_ID, TENANT_ID, CLIENT_SECRET, EMAIL_USER
 
@@ -9,45 +9,82 @@ def enviar_resumo_email(
     destinatarios: list[str],
     assunto: str,
     corpo: str,
-    content_type: str = "Text"
+    content_type: str = "Text",
+    bcc: list[str] | None = None,
+    cc: list[str] | None = None,
 ) -> bool:
     """
-    Envia um e-mail com assunto e corpo para uma lista de destinatários via Microsoft Graph.
+    Envia e-mail via Microsoft Graph (Azure AD / MSAL).
 
     Parâmetros:
-    - destinatarios: lista de endereços de e-mail
+    - destinatarios: lista de e-mails no TO
     - assunto: assunto do e-mail
     - corpo: conteúdo (plain text ou HTML)
     - content_type: "Text" ou "HTML"
+    - bcc: lista de e-mails em CCO (opcional)
+    - cc: lista de e-mails em CC (opcional)
+
+    Retorno:
+    - True se enviado (HTTP 202), False caso contrário.
     """
-    # Autenticação MSAL
+    bcc = bcc or []
+    cc = cc or []
+
+    # Sanitização leve (evita entradas vazias/None e duplicaçōes)
+    def _clean_list(values: list[str]) -> list[str]:
+        out = []
+        for v in values:
+            if v is None:
+                continue
+            s = str(v).strip()
+            if not s:
+                continue
+            out.append(s)
+        # dedup preservando ordem
+        return list(dict.fromkeys(out))
+
+    destinatarios = _clean_list(destinatarios)
+    bcc = _clean_list(bcc)
+    cc = _clean_list(cc)
+
+    if not destinatarios and not bcc and not cc:
+        print("[EMAIL] Nenhum destinatário informado (TO/CC/BCC vazios).")
+        return False
+
+    # Autenticação MSAL (Client Credentials)
     app = msal.ConfidentialClientApplication(
         CLIENT_ID,
         authority=f"https://login.microsoftonline.com/{TENANT_ID}",
         client_credential=CLIENT_SECRET,
     )
-    token_resp = app.acquire_token_for_client(
-        scopes=["https://graph.microsoft.com/.default"]
-    )
+    token_resp = app.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
     if "access_token" not in token_resp:
         print(f"[EMAIL] Erro ao obter token: {token_resp.get('error_description')}")
         return False
 
     token = token_resp["access_token"]
 
-    # Payload do e-mail
-    mail = {
-        "message": {
-            "subject": assunto,
-            "body": {
-                "contentType": content_type,
-                "content": corpo,
-            },
-            "toRecipients": [
-                {"emailAddress": {"address": email}} for email in destinatarios
-            ],
-            "from": {"emailAddress": {"address": EMAIL_USER}},
+    # Payload do e-mail (Graph)
+    message_obj = {
+        "subject": assunto,
+        "body": {
+            "contentType": content_type,
+            "content": corpo,
         },
+        "toRecipients": [{"emailAddress": {"address": e}} for e in destinatarios],
+        # Observação: no sendMail do Graph, o remetente efetivo é o usuário do endpoint (/users/{EMAIL_USER})
+        # Mantemos compatibilidade com seu padrão, mas "from" não é necessário.
+        "from": {"emailAddress": {"address": EMAIL_USER}},
+    }
+
+    if cc:
+        message_obj["ccRecipients"] = [{"emailAddress": {"address": e}} for e in cc]
+
+    if bcc:
+        message_obj["bccRecipients"] = [{"emailAddress": {"address": e}} for e in bcc]
+
+    mail = {
+        "message": message_obj,
         "saveToSentItems": "true",
     }
 
@@ -56,10 +93,17 @@ def enviar_resumo_email(
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json",
     }
-    resp = requests.post(endpoint, headers=headers, json=mail)
+
+    try:
+        resp = requests.post(endpoint, headers=headers, json=mail, timeout=60)
+    except Exception as e:
+        print(f"[EMAIL] Erro de conexão ao enviar e-mail: {e}")
+        return False
 
     if resp.status_code == 202:
-        print(f"[EMAIL] Enviado com sucesso para: {destinatarios}")
+        print(
+            f"[EMAIL] Enviado com sucesso | TO: {len(destinatarios)} | CC: {len(cc)} | BCC: {len(bcc)}"
+        )
         return True
 
     print(f"[EMAIL] Falha ao enviar e-mail: {resp.status_code} – {resp.text}")

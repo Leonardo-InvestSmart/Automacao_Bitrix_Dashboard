@@ -43,3 +43,19 @@ if not (TENANT_ID and CLIENT_ID and CLIENT_SECRET and EMAIL_USER):
     CLIENT_ID     = CLIENT_ID     or secrets.get("AZURE_CLIENT_ID")
     CLIENT_SECRET = CLIENT_SECRET or secrets.get("AZURE_CLIENT_SECRET")
     EMAIL_USER    = EMAIL_USER    or secrets.get("EMAIL_USER")
+
+
+# 4) Z-API (ENV primeiro, depois secrets)
+ZAPI_INSTANCE_ID = os.getenv("INSTANCE_ID")
+ZAPI_INSTANCE_TOKEN = os.getenv("INSTANCE_TOKEN")
+ZAPI_ACCOUNT_SECURITY_TOKEN = os.getenv("ACCOUNT_SECURITY_TOKEN")
+
+if not (ZAPI_INSTANCE_ID and ZAPI_INSTANCE_TOKEN and ZAPI_ACCOUNT_SECURITY_TOKEN):
+    if secrets is None:
+        try:
+            secrets = toml.load(".streamlit/secrets.toml")
+        except FileNotFoundError:
+            secrets = {}
+    ZAPI_INSTANCE_ID = ZAPI_INSTANCE_ID or secrets.get("INSTANCE_ID")
+    ZAPI_INSTANCE_TOKEN = ZAPI_INSTANCE_TOKEN or secrets.get("INSTANCE_TOKEN")
+    ZAPI_ACCOUNT_SECURITY_TOKEN = ZAPI_ACCOUNT_SECURITY_TOKEN or secrets.get("ACCOUNT_SECURITY_TOKEN")
