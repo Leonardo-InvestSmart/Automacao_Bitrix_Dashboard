@@ -19,41 +19,87 @@ TO_ANCHOR = EMAIL_USER  # ex: comissoes@investsmart.com.br
 
 
 # ==============================
-# Mensagem (mesma para e-mail e WhatsApp)
+# Mensagem - EMAIL (HTML)
 # ==============================
-MENSAGEM_TEXTO = """
-Para todos os Assessores, Líderes e Colaboradores da InvestSmart e BeSmart,
-No final de 2024, a companhia definiu que as comissões BeSmart seriam pagas prioritariamente ao assessor InvestSmart dono do cliente XP. Se não fosse cliente XP, valia o dono da produção no Bitrix.
-Depois de um ano operando assim, evoluímos nos controles e vimos que separar as lógicas torna o processo mais claro, evita conflitos e reduz erros. Por isso, conforme alinhado com a Direção Executiva e CEO, a partir do fechamento de janeiro de 2026 (pagamento em fevereiro), as regras passam a ser:
-1. Produções XP Investimentos: O pagamento seguirá exclusivamente o código A do assessor vinculado a conta do cliente.
- 2. Produções BeSmart: O pagamento seguirá exclusivamente o “dono da produção” informado no card do Bitrix.
-O que precisa ser ajustado antes do final de janeiro para que o pagamento em fevereiro seja 100% alinhado com o novo formato:
-• Produções BeSmart dentro da mesma filial que estejam sendo redirecionadas na lógica de 2025:
-→ O time de comissões enviará aos líderes um excel para confirmar o dono correto de cada produção. Esse excel deverá ser retornado até um prazo a ser definido.
-• Produções BeSmart que estejam sendo redirecionadas entre filiais diferentes:
-→ Diretores receberão um excel do time de comissões onde validarão o dono correto junto dos líderes e assessores. Esse excel deverá ser retornado até um prazo a ser definido.
-• Cards onde capitães aparecem como donos:
-→ Líderes receberão do time de comissões um excel onde indicarão quem é o verdadeiro dono da produção. Esse excel deverá ser retornado até um prazo a ser definido.
-Independente dos casos acima, vale para todos líderes e assessores nessa transição:
-• Conferir base XP para garantir que os códigos A estejam corretos.
-• A partir de 2026, garantir que o dono correto esteja definido no card desde o início junto do comercial BeSmart ou capitão.
-Por que estamos mudando
-A separação das regras deixa o processo mais simples, transparente e justo. Também acompanha a realidade atual: muitos assessores têm se especializado na BeSmart como uma das principais fontes de receita.
-Vamos para cima em 2026 com muito mais praticidade e simplicidade nas regras, focar no que importa que é vender com a tranquilidade que irá receber.
+MENSAGEM_EMAIL_HTML = """
+<strong>Para todos os Assessores, Líderes e Colaboradores da InvestSmart e BeSmart,</strong><br><br>
+
+No final de 2024, a companhia definiu que as comissões BeSmart seriam pagas prioritariamente ao assessor InvestSmart dono do cliente XP. Se não fosse cliente XP, valia o dono da produção no Bitrix.<br><br>
+
+Depois de um ano operando assim, evoluímos nos controles e vimos que separar as lógicas torna o processo mais claro, evita conflitos e reduz erros. Por isso, conforme alinhado com a Direção Executiva e CEO, <strong>a partir do fechamento de janeiro de 2026 (pagamento em fevereiro)</strong>, as regras passam a ser:<br><br>
+
+<strong>1. Produções XP Investimentos:</strong><br>
+O pagamento seguirá exclusivamente o código A do assessor vinculado à conta do cliente.<br><br>
+
+<strong>2. Produções BeSmart:</strong><br>
+O pagamento seguirá exclusivamente o “dono da produção” informado no card do Bitrix.<br><br>
+
+<strong>O que precisa ser ajustado antes do final de janeiro para que o pagamento em fevereiro seja 100% alinhado com o novo formato:</strong><br><br>
+
+• Produções BeSmart <strong>dentro da mesma filial</strong>:<br>
+→ O time de comissões enviará aos líderes um excel para confirmação.<br><br>
+
+• Produções BeSmart <strong>entre filiais diferentes</strong>:<br>
+→ Diretores receberão um excel para validação junto aos líderes e assessores.<br><br>
+
+• Cards onde <strong>capitães</strong> aparecem como donos:<br>
+→ Líderes indicarão o verdadeiro dono da produção.<br><br>
+
+Independente dos casos acima:<br>
+• <strong>Conferir base XP</strong> para garantir que os códigos A estejam corretos.<br>
+• <strong>Garantir o dono correto no card desde o início em 2026.</strong><br><br>
+
+<strong>Por que estamos mudando</strong><br><br>
+
+A separação das regras deixa o processo mais simples, transparente e justo. Também acompanha a realidade atual: muitos assessores têm se especializado na BeSmart como uma das principais fontes de receita.<br><br>
+
+Vamos para cima em 2026 com muito mais praticidade e simplicidade nas regras, focar no que importa que é vender com a tranquilidade que irá receber.<br><br>
+
+Atenciosamente,<br><br>
+<strong>Equipe de Comissões</strong>
 """.strip()
 
+# ==============================
+# Mensagem - WHATSAPP
+# ==============================
+MENSAGEM_WHATSAPP = """
+*Para todos os Assessores, Líderes e Colaboradores da InvestSmart e BeSmart,*
 
-def texto_para_html(texto: str) -> str:
-    safe = (
-        texto.replace("&", "&amp;")
-             .replace("<", "&lt;")
-             .replace(">", "&gt;")
-    )
-    return (
-        "<div style='font-family: Arial, sans-serif; font-size: 14px; line-height: 1.5;'>"
-        + safe.replace("\n", "<br>")
-        + "</div>"
-    )
+No final de 2024, a companhia definiu que as comissões BeSmart seriam pagas prioritariamente ao assessor InvestSmart dono do cliente XP. Se não fosse cliente XP, valia o dono da produção no Bitrix.
+
+Depois de um ano operando assim, evoluímos nos controles e vimos que separar as lógicas torna o processo mais claro, evita conflitos e reduz erros. Por isso, conforme alinhado com a Direção Executiva e CEO, *a partir do fechamento de janeiro de 2026 (pagamento em fevereiro)*, as regras passam a ser:
+
+*1. Produções XP Investimentos*  
+Pagamento exclusivo pelo código A do assessor vinculado à conta do cliente.
+
+*2. Produções BeSmart*  
+Pagamento exclusivo pelo dono da produção informado no card do Bitrix.
+
+*O que precisa ser ajustado antes do final de janeiro:*
+
+• BeSmart na mesma filial (lógica 2025)  
+→ Excel será enviado aos líderes para confirmação.
+
+• BeSmart entre filiais  
+→ Diretores validarão junto aos líderes e assessores.
+
+• Cards com capitães como donos  
+→ Líderes indicarão o verdadeiro dono.
+
+*Para todos os líderes e assessores:*
+• Conferir base XP (código A correto).  
+• Garantir dono correto no card desde o início em 2026.
+
+*Por que estamos mudando*
+
+Processo mais simples, transparente e justo, refletindo a realidade atual da BeSmart.
+
+Vamos para cima em 2026 com mais praticidade e segurança no recebimento.
+
+Atenciosamente,
+
+*Equipe de Comissões*
+""".strip()
 
 
 def normalizar_telefone_br(phone: str) -> str | None:
@@ -126,7 +172,7 @@ def enviar_whatsapp_zapi(message: str, phones: list[str]) -> None:
 
 def main():
     agora = datetime.now(BR_TZ).strftime("%d/%m/%Y %H:%M")
-    assunto = f"[Comunicado Oficial] Regras Comissões 2026 – Fechamento Jan/2026 | {agora}"
+    assunto = "[Comunicado Oficial] Regras Comissões 2026 – Fechamento Jan/2026"
 
     print("▶ Carregando contatos:", BASE_EMAILS_PATH)
     emails, telefones = carregar_contatos(BASE_EMAILS_PATH)
@@ -134,14 +180,12 @@ def main():
 
     # ========== E-MAIL via Azure (Microsoft Graph) ==========
     # Estratégia: 1 e-mail com TO âncora e todos os destinatários em BCC
-    corpo_html = texto_para_html(MENSAGEM_TEXTO)
-
     ok = enviar_resumo_email(
-        destinatarios=[TO_ANCHOR],     # To
+        destinatarios=[TO_ANCHOR],
         assunto=assunto,
-        corpo=corpo_html,
+        corpo=MENSAGEM_EMAIL_HTML,
         content_type="HTML",
-        bcc=emails,                   # <-- precisamos suportar isso no email_service.py
+        bcc=emails,
     )
 
     if ok:
@@ -150,7 +194,7 @@ def main():
         print("❌ Falha ao enviar e-mail Azure (BCC).")
 
     # ========== WhatsApp via Z-API ==========
-    enviar_whatsapp_zapi(MENSAGEM_TEXTO, telefones)
+    enviar_whatsapp_zapi(MENSAGEM_WHATSAPP, telefones)
 
     print("🏁 Job concluído.")
 
