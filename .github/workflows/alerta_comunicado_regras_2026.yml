@@ -2,12 +2,13 @@ name: Comunicado Regras 2026 (Email Azure + WhatsApp)
 
 on:
   schedule:
-    - cron: "0 12 * * *" # 09:00 (UTC-3)
+    - cron: "30 13 * * 1-5" # 10:30 Brasil (UTC-3), dias úteis
   workflow_dispatch:
 
 jobs:
   run:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,26 +18,27 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install deps
+      - name: Install dependencies
         run: |
           pip install -r requirements.txt
 
       - name: Run job
         env:
-          # Azure (vem dos GitHub Secrets)
+          # Azure (Graph / MSAL)
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
 
-          # Z-API (também pode vir dos GitHub Secrets)
+          # Z-API
           INSTANCE_ID: ${{ secrets.INSTANCE_ID }}
           INSTANCE_TOKEN: ${{ secrets.INSTANCE_TOKEN }}
           ACCOUNT_SECURITY_TOKEN: ${{ secrets.ACCOUNT_SECURITY_TOKEN }}
 
-          # Supabase (se seu email_service/config puxar algo, mantém)
+          # Supabase (se seu config usa sempre)
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
 
         run: |
           python alerta_comunicado_regras_2026.py
+

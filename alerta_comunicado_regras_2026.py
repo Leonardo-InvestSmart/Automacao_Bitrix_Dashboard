@@ -1,8 +1,9 @@
 import re
 import time
+import calendar
 import pandas as pd
 import pytz
-from datetime import datetime
+from datetime import datetime, date
 
 from config import EMAIL_USER, ZAPI_INSTANCE_ID, ZAPI_INSTANCE_TOKEN, ZAPI_ACCOUNT_SECURITY_TOKEN
 from email_service import enviar_resumo_email
@@ -171,7 +172,30 @@ def enviar_whatsapp_zapi(message: str, phones: list[str]) -> None:
 
 
 def main():
-    agora = datetime.now(BR_TZ).strftime("%d/%m/%Y %H:%M")
+    # ==============================
+    # Travas de execução (governança)
+    # - Dias úteis
+    # - Somente até o último dia do mês corrente (dia 31 quando existir)
+    # ==============================
+    hoje = datetime.now(BR_TZ).date()
+
+    # Dias úteis: seg(0) ... sex(4)
+    if hoje.weekday() >= 5:
+        print("⏹️ Fim de semana. Job abortado.")
+        return
+
+    # Até o último dia do mês corrente
+    ultimo_dia_mes = calendar.monthrange(hoje.year, hoje.month)[1]
+    data_limite = date(hoje.year, hoje.month, ultimo_dia_mes)
+
+    if hoje > data_limite:
+        print("⏹️ Fora do período permitido (após o fim do mês). Job abortado.")
+        return
+
+    # Garantir âncora de e-mail
+    if not TO_ANCHOR:
+        raise RuntimeError("EMAIL_USER não configurado. Verifique GitHub Secrets/env.")
+
     assunto = "[Comunicado Oficial] Regras Comissões 2026 – Fechamento Jan/2026"
 
     print("▶ Carregando contatos:", BASE_EMAILS_PATH)
