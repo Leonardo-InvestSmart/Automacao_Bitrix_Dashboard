@@ -30,11 +30,6 @@ jobs:
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
           EMAIL_USER: ${{ secrets.EMAIL_USER }}
 
-          # Z-API
-          INSTANCE_ID: ${{ secrets.INSTANCE_ID }}
-          INSTANCE_TOKEN: ${{ secrets.INSTANCE_TOKEN }}
-          ACCOUNT_SECURITY_TOKEN: ${{ secrets.ACCOUNT_SECURITY_TOKEN }}
-
           # Supabase (se seu config usa sempre)
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
