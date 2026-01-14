@@ -15,6 +15,8 @@ BASE_EMAILS_PATH = "assets/base_emails.xlsx"
 # âncora (To) para e-mail com BCC em massa
 TO_ANCHOR = EMAIL_USER  # ex: comissoes@investsmart.com.br
 
+# Diretor em cópia normal (CC) sempre
+DIRETOR_CC = "carlos.mw@investsmart.com.br"
 
 # ==============================
 # Mensagem - EMAIL (HTML)
@@ -101,7 +103,13 @@ def main():
 
     print("▶ Carregando contatos:", BASE_EMAILS_PATH)
     emails = carregar_contatos(BASE_EMAILS_PATH)
-    print(f"📧 Emails (BCC): {len(emails)}")
+
+    # Remove o diretor do BCC e garante em CC
+    diretor_cc = DIRETOR_CC.strip().lower()
+    bcc_emails = [e for e in emails if e.strip().lower() != diretor_cc]
+
+    print(f"📧 Emails (BCC): {len(bcc_emails)} | 📌 Diretor (CC): {DIRETOR_CC}")
+
 
     # ========== E-MAIL via Azure (Microsoft Graph) ==========
     # Estratégia: 1 e-mail com TO âncora e todos os destinatários em BCC
@@ -110,8 +118,10 @@ def main():
         assunto=assunto,
         corpo=MENSAGEM_EMAIL_HTML,
         content_type="HTML",
-        bcc=emails,
+        bcc=bcc_emails,
+        cc=[DIRETOR_CC],
     )
+
 
     if ok:
         print("✅ E-mail Azure enviado com sucesso (BCC).")
