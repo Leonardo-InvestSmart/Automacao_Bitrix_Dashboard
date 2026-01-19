@@ -26,7 +26,7 @@ MENSAGEM_EMAIL_HTML = """
 
 No final de 2024, a companhia definiu que as comissões BeSmart seriam pagas prioritariamente ao assessor InvestSmart dono do cliente XP. Se não fosse cliente XP, valia o dono da produção no Bitrix.<br><br>
 
-Depois de um ano operando assim, evoluímos nos controles e vimos que separar as lógicas torna o processo mais claro, evita conflitos e reduz erros. Por isso, conforme alinhado com a Direção Executiva e CEO, <strong>a partir do fechamento de janeiro de 2026 (pagamento em fevereiro)</strong>, as regras passam a ser:<br><br>
+Depois de um ano operando desta forma, evoluímos nos controles e vimos que separar as lógicas torna o processo mais claro, evita conflitos e reduz erros. Por isso, conforme alinhado com a Direção Executiva e CEO, <strong>a partir do fechamento de janeiro de 2026 (pagamento em fevereiro)</strong>, as regras passam a ser:<br><br>
 
 <strong>1. Produções XP Investimentos:</strong><br>
 O pagamento seguirá exclusivamente o código A do assessor vinculado à conta do cliente.<br><br>
