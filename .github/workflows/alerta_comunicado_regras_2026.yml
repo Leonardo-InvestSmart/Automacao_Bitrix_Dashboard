@@ -2,7 +2,8 @@ name: Comunicado Regras 2026 (Email Azure + WhatsApp)
 
 on:
   schedule:
-    - cron: "30 13 * * 1-5" # 10:30 Brasil (UTC-3), dias úteis
+    - cron: "0 12 * * *"  # 09:00 Brasil (UTC-3)
+    - cron: "0 21 * * *"  # 18:00 Brasil (UTC-3)
   workflow_dispatch:
 
 jobs:
